@@ -1,9 +1,13 @@
-import math
+
 import numpy as np
-import random
+import scipy.cluster.hierarchy as sch
 import matplotlib.pyplot as plt 
 import matplotlib.cm as cm
 from addon import *
+
+class KNN():
+    pass
+
 
 class KMeans():
     def __init__(self):
@@ -28,11 +32,6 @@ class KMeans():
             y_max = max(get_y_list(self.points))
             x, y = get_random_xy(1, 100, (x_min, x_max, y_min, y_max))
             self.centroids.append((x,y))
-        
-        
-    def set_points_random(self, rand_range=(5, 20)):  # Set points random
-        point_n = random.randint(rand_range[0], rand_range[1])
-        set_points(point_n)
         
         
     def match_points_and_centroids(self):  # return [ [p1, p3, p8] , [p4, p6, p7], ... ]
@@ -88,4 +87,52 @@ class KMeans():
             plt.scatter(group_x_list, group_y_list, color=cur_color)
             plt.scatter(cur_centroid[0], cur_centroid[1], color=cur_color, marker='*', s=200)
         plt.savefig('./results/res_{}.jpg'.format(index))
+      
             
+# only centroid-distance yet...  (aim to add)
+class Hierarchical():
+    def __init__(self):
+        self.groups = []
+    
+    def set_points(self, point_n):
+        for _ in range(point_n):
+            x, y = get_random_xy(1,100)
+            self.groups.append([(x,y)])
+    
+    
+    def get_distance(self, group1, group2):
+        centroid1 = get_centroid_from_group(group1)  # x, y
+        centroid2 = get_centroid_from_group(group2)  # x, y
+        return dist(centroid1, centroid2)
+
+    def get_closest_groups(self):
+        max_distance = -1
+        dst_group1 = None
+        dst_group2 = None
+        for idx1, group1 in enumerate(self.groups):
+            for idx2, group2 in enumerate(self.groups):
+                distance = self.get_distance(group1, group2)
+                if distance != 0 and distance > max_distance:
+                    max_distance = distance
+                    dst_group1 = idx1
+                    dst_group2 = idx2
+        return dst_group1, dst_group2
+    
+    
+    def combine(self, group1_idx, group2_idx):
+        self.groups[group1_idx] += self.groups[group2_idx]
+        self.groups.pop(group2_idx)
+        
+    
+    def cluster(self, cluster_n):
+        while len(self.groups) != cluster_n:
+            group1, group2 = self.get_closest_groups()
+            self.combine(group1, group2)
+            print('compare {} and {}!!'.format(group1, group2))
+            
+    def plot(self):
+        dendrogram = sch.dendrogram(sch.linkage(X, method  = "ward"))
+        plt.title('Hierarchical Clustering')
+        plt.xlabel('$X$')
+        plt.ylabel('$Y$')
+        plt.show()

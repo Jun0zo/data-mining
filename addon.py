@@ -1,3 +1,6 @@
+import random
+import math
+
 def neighbor(point, centroids):
     dist_list = list(map(lambda centroid : dist(point, centroid), centroids))
     group_index = np.argmin(dist_list)
@@ -24,3 +27,11 @@ def get_colors(n):
     color_y = [i+color_x+(i*color_x)**2 for i in range(n)]
     colors = cm.rainbow(np.linspace(0, 1, len(color_y)))
     return colors
+
+def get_centroid_from_group(group):
+    x_sum = 0
+    y_sum = 0
+    for (x,y) in group:
+       x_sum += x
+       y_sum += y
+    return x_sum/len(group), y_sum/len(group)
